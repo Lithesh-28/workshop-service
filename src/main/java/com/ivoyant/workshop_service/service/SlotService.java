@@ -2,6 +2,7 @@ package com.ivoyant.workshop_service.service;
 
 import com.ivoyant.workshop_service.entity.Mechanic;
 import com.ivoyant.workshop_service.entity.Slot;
+import com.ivoyant.workshop_service.exception.InvalidIdException;
 import com.ivoyant.workshop_service.exception.MechanicNotFoundException;
 import com.ivoyant.workshop_service.exception.SlotNotFoundException;
 import com.ivoyant.workshop_service.repository.MechanicRepository;
@@ -30,6 +31,9 @@ public class SlotService {
     }
 
     public Slot createSlot(Slot slot) {
+            if (slot.getId() != null)
+                throw new InvalidIdException("ID should not be provided when creating a slot. It will be auto-generated.");
+
         return slotRepository.save(slot);
     }
 
@@ -39,7 +43,7 @@ public class SlotService {
 
         slot.setDate(slotDetails.getDate());
         slot.setTime(slotDetails.getTime());
-        slot.setAvailable(slotDetails.isAvailable());
+        slot.setAvailable(slotDetails.getAvailable());
         slot.setAssignedBookingId(slotDetails.getAssignedBookingId());
 
         return slotRepository.save(slot);
@@ -53,6 +57,13 @@ public class SlotService {
             slot.setAvailable(false);
         }
         slotRepository.save(slot);
+    }
+
+    public void deleteSlot(Integer id){
+        Slot slot = slotRepository.findById(id)
+                .orElseThrow(() -> new SlotNotFoundException("Slot not found for id " + id));
+
+        slotRepository.deleteById(id);
     }
 
     public Slot assignMechanicToSlot(Integer slotId, Integer mechanicId) {
